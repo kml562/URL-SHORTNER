@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const startServer = async (app, PORT, MONGO_URI) => {
     try {
         await mongoose.connect(MONGO_URI)
-        console.log("Connected to url")
+        console.log("Connected to mongoose")
         app.listen(PORT, () => {
             console.log(`connecting to port ${PORT}`)
         })
