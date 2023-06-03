@@ -30,7 +30,7 @@ const createUrlShorten = async (req, res) => {
       let shortCode = shortId.generate()
      
       data.urlCode = shortCode;
-
+//     create short url
       data.shortUrl = `http://localhost:${process.env.PORT}/${shortCode}`;
 
       const saveData =await urlModel.create(data);
@@ -43,8 +43,10 @@ const createUrlShorten = async (req, res) => {
 
 const getUrl = async (req, res) => {
   try {
+//     checking if data is present in our DB with that long url
     const url = await urlModel.findOne({ urlCode: req.params.urlCode });
     if (url) {
+//       redirecting it to that page 
       res.status(302).redirect(url.longUrl);
     } else {
       res.status(404).send({status: false, message:"Not found"});
