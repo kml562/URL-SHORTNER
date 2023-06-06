@@ -21,12 +21,23 @@ const createUrlShorten = async (req, res) => {
       return res.status(400).send({status:false,message:"Your URL is not a valid URL"})
       }
 
+    // finding the data in the cache storage----------------------------------------------------------
+    const caseUrl = await GET_ASYNC(longUrl);
+    //console.log(caseUrl)
+    if (caseUrl) {
+      return res.status(200).json({status:true, data:JSON.parse(caseUrl)});
+    }    
+
 
   //  if long url already exist in DB return the respective shorturl and urlcode for it
     const dbData = await urlModel.findOne({ longUrl: data.longUrl }).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 });
 
     if (dbData) {
-      return res.status(200).send({ status: true, data: dbData });
+      //set the data into the cache memory----------------------------------------------------------
+    await SET_ASYNC(longUrl, JSON.stringify(dbData), "EX", 24 * 60 * 60);
+      return res.status(201).send({ status: true, data: dbData });
+    
+    
     }else{
 
     const response= await axios
@@ -46,7 +57,9 @@ const createUrlShorten = async (req, res) => {
       
       await urlModel.create(data);
       const saveData = await urlModel.findOne({longUrl:data.longUrl}).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 });
-
+      //set the data into the cache memory----------------------------------------------------------  
+      await SET_ASYNC(longUrl, JSON.stringify(saveData ), "EX", 24 * 60 * 60);
+     
       res.status(201).send({ status: true, data: saveData });
     })
     .catch((error) => {
@@ -69,7 +82,7 @@ const getUrl = async (req, res) => {
     else {
       const url = await urlModel.findOne({ urlCode: req.params.urlCode });
       if (url) {
-        await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(url.longUrl),"EX",60 * 60)
+        await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(url.longUrl),"EX",24 * 60 * 60)
         res.status(302).redirect(url.longUrl);
       }
       else {

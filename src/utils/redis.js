@@ -1,7 +1,7 @@
 const redis = require('redis')
 const { promisify } = require("util");
 const dotenv = require('dotenv').config()
-//1. Connect to the redis server
+
 //1. Connect to the redis server
 const redisClient = redis.createClient(
     10591,
