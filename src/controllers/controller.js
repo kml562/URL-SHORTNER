@@ -8,13 +8,12 @@ const { response } = require("express");
 
 const createUrlShorten = async (req, res) => {
   try {
-    let data = req.body;
-    data.longUrl = data.longUrl.trim()
-
-    // if input is empty
-     if (!data.longUrl){
-       return res.status(400).send({ status: false, message: "Please, Provide URL" });
-     }
+    const data = req.body;
+    if(!data.longUrl){
+      return res.status(400).json({ status: false, message: "Please provide a valid URL" });
+    }
+    data.longUrl = data.longUrl.trim();
+    const longUrl = data.longUrl;
 
     // URL is valid and string
     if(!validUrl.isWebUri(data.longUrl)){
@@ -25,7 +24,7 @@ const createUrlShorten = async (req, res) => {
     const caseUrl = await GET_ASYNC(longUrl);
     //console.log(caseUrl)
     if (caseUrl) {
-      return res.status(200).json({status:true, data:JSON.parse(caseUrl)});
+      return res.status(201).json({status:true, data:JSON.parse(caseUrl)});
     }    
 
 
