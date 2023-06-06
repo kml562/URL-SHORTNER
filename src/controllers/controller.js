@@ -3,10 +3,11 @@ const shortId = require("shortid");
 const urlModel = require("../model/urlModel");
 const { GET_ASYNC, SET_ASYNC } = require("../utils/redis/redis");
 const axios = require("axios");
-const { response } = require("express");
+// const { response } = require("express");
 
+// regx to check https method valid---------------------
 const isValidUrl = (urlString) => {
-  var urlPattern = new RegExp("(?:https?)://."); // regx to check https method valid---------------------
+  var urlPattern = new RegExp("(?:https?)://."); 
   return urlPattern.test(urlString);
 };
 
@@ -22,16 +23,19 @@ const createUrlShorten = async (req, res) => {
         .status(400)
         .json({ status: false, message: "Please provide a valid URL" });
     }
+
+    // validation ------------------------------------------
     if (!isValidUrl(data.longUrl))
-      // validation ------------------------------------------
       return res
         .status(400)
         .json({ status: false, message: "Please, Provide valid URL" });
+
+    // validation ------------------------------------------
     if (!isUrl(data.longUrl))
-      // validation ------------------------------------------
       return res
         .status(400)
         .json({ status: false, message: "Please, Provide valid URL" });
+
     //finding the data into database----------------------------------------------------------------
     const dbData = await urlModel
       .findOne({ longUrl: data.longUrl })
@@ -39,10 +43,12 @@ const createUrlShorten = async (req, res) => {
     if (dbData) {
       return res.status(200).json({ status: true, data: dbData });
     } else {
+
       // axios for validations--------------------------------------------------------------------
       const response = await axios
         .get(longUrl)
         .then(async (response) => {
+
           //  short id convert into the lower case string-----------------------------------------------
           let shortCode = shortId.generate().toLowerCase();
           const code = await urlModel.findOne({ urlCode: shortCode });
@@ -60,10 +66,10 @@ const createUrlShorten = async (req, res) => {
           return res.status(201).json({ status: true, data: saveData });
         })
         .catch((err) => {
-          
+
           return res
             .status(400)
-            .json({ status: false, message: "url link in invalid" });
+            .json({ status: false, message: "Invalid URL" });
         });
     }
   } catch (error) {
@@ -72,10 +78,11 @@ const createUrlShorten = async (req, res) => {
   }
 };
 
+
 const getUrl = async (req, res) => {
   try {
     const fetchFromRedis = await GET_ASYNC(`${req.params.urlCode}`);
-   
+
     if (fetchFromRedis) {
       res.status(302).redirect(JSON.parse(fetchFromRedis));
     } else {
